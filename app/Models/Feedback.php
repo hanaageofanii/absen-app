@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class Feedback extends Model
 {
     protected $fillable=[
-        'from_user','to_employee',
+        'user_id','to_employee',
         'category','message','anonymous'
     ];
 

@@ -306,10 +306,10 @@ class="input-modern w-full p-3 rounded-xl">
 </div>
 
 <div>
-<label class="block text-sm font-semibold text-gray-700 mb-2">Aktivitas Hari Ini</label>
+<label class="block text-sm font-semibold text-gray-700 mb-2">Aktivitas</label>
 <textarea id="reportActivity" required
 class="input-modern w-full p-3 rounded-xl min-h-[120px]"
-placeholder="Deskripsikan aktivitas dan pencapaian hari ini..."></textarea>
+placeholder="Deskripsikan aktivitas dan pencapaian mu..."></textarea>
 </div>
 
 <div>
@@ -698,9 +698,11 @@ e.preventDefault();
 
 const btn = document.getElementById('btnSubmitReport');
 btn.disabled = true;
-btn.innerHTML = '<span class="relative z-10"><div class="loading"></div> Menyimpan...</span>';
+btn.innerHTML =
+'<span class="relative z-10"><div class="loading"></div> Menyimpan...</span>';
 
 try {
+
 let formData = new FormData();
 formData.append('date', reportDate.value);
 formData.append('activity', reportActivity.value);
@@ -711,55 +713,100 @@ formData.append('file', reportFile.files[0]);
 
 let response = await fetch('/api/reports', {
 method: 'POST',
-headers: {
-'X-CSRF-TOKEN': csrf
-},
+headers: {'X-CSRF-TOKEN': csrf},
 body: formData
 });
+
 let data = await response.json();
+
 if(data.success){
+
+// ✅ TOAST SUCCESS
 toast('✓ Laporan berhasil disimpan');
+
+// ✅ CLEAR FORM
 reportForm.reset();
 reportDate.valueAsDate = new Date();
-document.getElementById('fileNameReport').textContent = 'Klik untuk upload file';
+document.getElementById('fileNameReport')
+.textContent = 'Klik untuk upload file';
+
+// ✅ RELOAD HISTORY
 loadReportHistory();
-} else {
-toast(data.message || 'Gagal menyimpan laporan', 'error');
+
+}else{
+toast(data.message || 'Gagal menyimpan laporan','error');
 }
-} catch(error) {
-console.error('Error submit report:', error);
-toast('❌ Gagal menyimpan laporan', 'error');
-} finally {
-btn.disabled = false;
-btn.innerHTML = '<span class="relative z-10 flex items-center justify-center space-x-2"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg><span>Simpan Laporan</span></span>';
+
+}catch(error){
+console.error(error);
+toast('❌ Gagal menyimpan laporan','error');
+}
+finally{
+btn.disabled=false;
+btn.innerHTML =
+'<span class="relative z-10 flex items-center justify-center space-x-2">'+
+'<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">'+
+'<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"'+
+'d="M5 13l4 4L19 7"></path></svg>'+
+'<span>Simpan Laporan</span></span>';
 }
 }
 
+/* LOAD HISTORY */
 async function loadReportHistory(){
-try {
+try{
+
 let response = await fetch('/api/reports');
 let data = await response.json();
 reportHistory.innerHTML = '';
-if(data.length > 0) {
+
+if(data.length > 0){
+
 data.reverse().forEach(report => {
 reportHistory.innerHTML += `
-<div class="bg-gradient-to-r from-indigo-50 to-purple-50 p-4 rounded-xl border-l-4 border-indigo-500 hover:shadow-md transition-shadow">
-<div class="flex justify-between items-start mb-2">
-<span class="font-bold text-indigo-700">${new Date(report.report_date).toLocaleDateString('id-ID')}</span>
-<span class="text-xs text-gray-500">${new Date(report.created_at).toLocaleTimeString('id-ID', {hour: '2-digit', minute: '2-digit'})}</span>
+<div class="bg-gradient-to-r from-indigo-50 to-purple-50
+p-4 rounded-xl border-l-4 border-indigo-500">
+
+<div class="flex justify-between mb-2">
+<span class="font-bold text-indigo-700">
+${new Date(report.report_date)
+.toLocaleDateString('id-ID')}
+</span>
+
+<span class="text-xs text-gray-500">
+${new Date(report.created_at)
+.toLocaleTimeString('id-ID',{
+hour:'2-digit',minute:'2-digit'})}
+</span>
 </div>
-<p class="text-gray-700">${report.activity}</p>
-${report.file ? '<p class="text-xs text-indigo-600 mt-2">📎 File terlampir</p>' : ''}
+
+<p class="text-gray-700">
+${report.activity}
+</p>
+
+${report.file ?
+`<a target="_blank"
+href="/storage/${report.file}"
+class="text-xs text-indigo-600 mt-2 underline block">
+📎 Lihat File
+</a>`
+: ''}
+
 </div>`;
 });
-} else {
-reportHistory.innerHTML = '<p class="text-center text-gray-400 py-8">Belum ada laporan</p>';
+
+}else{
+reportHistory.innerHTML =
+'<p class="text-center text-gray-400 py-8">Belum ada laporan</p>';
 }
-} catch(error) {
-console.error('Error loading reports:', error);
-reportHistory.innerHTML = '<p class="text-center text-red-400 py-8">Gagal memuat data</p>';
+
+}catch(error){
+console.error(error);
+reportHistory.innerHTML =
+'<p class="text-center text-red-400 py-8">Gagal memuat data</p>';
 }
 }
+
 
 /* ============ FEEDBACK ============ */
 async function submitFeedback(e){
@@ -904,5 +951,6 @@ loadLetterHistory();
 });
 
 </script>
+
 </body>
 </html>

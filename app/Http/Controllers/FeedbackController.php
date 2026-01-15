@@ -9,7 +9,7 @@ class FeedbackController extends Controller
 {
     public function store(Request $r){
         Feedback::create([
-            'from_user'=>session('user_id'),
+            'user_id'=>session('user_id'),
             'to_employee'=>$r->to,
             'category'=>$r->category,
             'message'=>$r->message,

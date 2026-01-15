@@ -26,51 +26,51 @@ class DatabaseSeeder extends Seeder
         ]);
 
         // Create Regular Users
-        User::create([
-            'username' => 'budi',
-            'email' => 'budi@example.com',
-            'password' => Hash::make('password'),
-            'role' => 'user'
-        ]);
+        // User::create([
+        //     'username' => 'budi',
+        //     'email' => 'budi@example.com',
+        //     'password' => Hash::make('password'),
+        //     'role' => 'user'
+        // ]);
 
-        User::create([
-            'username' => 'siti',
-            'email' => 'siti@example.com',
-            'password' => Hash::make('password'),
-            'role' => 'user'
-        ]);
+        // User::create([
+        //     'username' => 'siti',
+        //     'email' => 'siti@example.com',
+        //     'password' => Hash::make('password'),
+        //     'role' => 'user'
+        // ]);
 
-        User::create([
-            'username' => 'andi',
-            'email' => 'andi@example.com',
-            'password' => Hash::make('password'),
-            'role' => 'user'
-        ]);
+        // User::create([
+        //     'username' => 'andi',
+        //     'email' => 'andi@example.com',
+        //     'password' => Hash::make('password'),
+        //     'role' => 'user'
+        // ]);
 
         // Create Companies
-        Company::create([
-            'code' => 'PTN',
-            'name' => 'PT. Teknologi Nusantara'
-        ]);
+        // Company::create([
+        //     'code' => 'PTN',
+        //     'name' => 'PT. Teknologi Nusantara'
+        // ]);
 
-        Company::create([
-            'code' => 'PMB',
-            'name' => 'PT. Maju Bersama'
-        ]);
+        // Company::create([
+        //     'code' => 'PMB',
+        //     'name' => 'PT. Maju Bersama'
+        // ]);
 
-        Company::create([
-            'code' => 'PKI',
-            'name' => 'PT. Karya Indonesia'
-        ]);
+        // Company::create([
+        //     'code' => 'PKI',
+        //     'name' => 'PT. Karya Indonesia'
+        // ]);
 
-        Company::create([
-            'code' => 'PGM',
-            'name' => 'PT. Gemilang Mandiri'
-        ]);
+        // Company::create([
+        //     'code' => 'PGM',
+        //     'name' => 'PT. Gemilang Mandiri'
+        // ]);
 
-        Company::create([
-            'code' => 'PSJ',
-            'name' => 'PT. Sukses Jaya'
-        ]);
+        // Company::create([
+        //     'code' => 'PSJ',
+        //     'name' => 'PT. Sukses Jaya'
+        // ]);
     }
 }
