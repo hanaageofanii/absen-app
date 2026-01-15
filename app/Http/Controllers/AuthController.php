@@ -1,4 +1,7 @@
 <?php
+// ========================================
+// 1. AuthController.php
+// ========================================
 
 namespace App\Http\Controllers;
 
@@ -21,7 +24,8 @@ class AuthController extends Controller
         User::create([
             'username'=>$r->username,
             'email'=>$r->email,
-            'password'=>Hash::make($r->password)
+            'password'=>Hash::make($r->password),
+            'role'=>'user' // default role
         ]);
 
         return redirect('/login')->with('success','Akun berhasil dibuat');
@@ -42,6 +46,7 @@ class AuthController extends Controller
         session([
             'login'=>true,
             'user'=>$user->username,
+            'user_id'=>$user->id,  // TAMBAHKAN INI - PENTING!
             'role'=>$user->role
         ]);
 

@@ -6,20 +6,71 @@ use App\Models\User;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
+namespace Database\Seeders;
+
+use Illuminate\Database\Seeder;
+use App\Models\User;
+use App\Models\Company;
+use Illuminate\Support\Facades\Hash;
+
 class DatabaseSeeder extends Seeder
 {
-    use WithoutModelEvents;
-
-    /**
-     * Seed the application's database.
-     */
     public function run(): void
     {
-        // User::factory(10)->create();
+        // Create Admin User
+        User::create([
+            'username' => 'admin',
+            'email' => 'admin@example.com',
+            'password' => Hash::make('admin123'),
+            'role' => 'admin'
+        ]);
 
-        User::factory()->create([
-            'name' => 'Test User',
-            'email' => 'test@example.com',
+        // Create Regular Users
+        User::create([
+            'username' => 'budi',
+            'email' => 'budi@example.com',
+            'password' => Hash::make('password'),
+            'role' => 'user'
+        ]);
+
+        User::create([
+            'username' => 'siti',
+            'email' => 'siti@example.com',
+            'password' => Hash::make('password'),
+            'role' => 'user'
+        ]);
+
+        User::create([
+            'username' => 'andi',
+            'email' => 'andi@example.com',
+            'password' => Hash::make('password'),
+            'role' => 'user'
+        ]);
+
+        // Create Companies
+        Company::create([
+            'code' => 'PTN',
+            'name' => 'PT. Teknologi Nusantara'
+        ]);
+
+        Company::create([
+            'code' => 'PMB',
+            'name' => 'PT. Maju Bersama'
+        ]);
+
+        Company::create([
+            'code' => 'PKI',
+            'name' => 'PT. Karya Indonesia'
+        ]);
+
+        Company::create([
+            'code' => 'PGM',
+            'name' => 'PT. Gemilang Mandiri'
+        ]);
+
+        Company::create([
+            'code' => 'PSJ',
+            'name' => 'PT. Sukses Jaya'
         ]);
     }
 }

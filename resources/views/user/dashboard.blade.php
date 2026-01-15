@@ -4,540 +4,905 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Dashboard Karyawan</title>
+
 <script src="https://cdn.tailwindcss.com"></script>
+<meta name="csrf-token" content="{{ csrf_token() }}">
+
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
-*{font-family:'Plus Jakarta Sans',sans-serif;}
 
-@keyframes slideDown{from{opacity:0;transform:translateY(-20px)}to{opacity:1;transform:translateY(0)}}
-@keyframes fadeIn{from{opacity:0}to{opacity:1}}
-@keyframes pulse{0%,100%{opacity:1}50%{opacity:.8}}
-
-.animate-slide{animation:slideDown 0.5s ease-out}
-.animate-fade{animation:fadeIn 0.5s ease-out}
-.status-active{animation:pulse 2s ease-in-out infinite}
-
-.card-hover{transition:all 0.3s ease}
-.card-hover:hover{transform:translateY(-5px);box-shadow:0 20px 40px rgba(0,0,0,0.1)}
-
-.btn-primary{
-background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);
-transition:all 0.3s ease}
-.btn-primary:hover{transform:translateY(-2px);box-shadow:0 10px 25px rgba(102,126,234,0.4)}
+*{
+font-family:'Plus Jakarta Sans',sans-serif;
+}
 
 .tab-active{
-border-bottom:3px solid #667eea;
-color:#667eea;
-font-weight:600}
+border-bottom:3px solid #6366f1;
+color:#6366f1;
+font-weight:600;
+position: relative;
+}
 
-/* Toast */
-#toastContainer div {
-    transition: all 0.4s ease;
+.tab-active::after {
+content: '';
+position: absolute;
+bottom: -3px;
+left: 0;
+right: 0;
+height: 3px;
+background: linear-gradient(90deg, #6366f1, #8b5cf6);
+border-radius: 3px 3px 0 0;
+}
+
+.gradient-bg {
+background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.card-hover {
+transition: all 0.3s ease;
+}
+
+.card-hover:hover {
+transform: translateY(-5px);
+box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+.btn-primary {
+background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+transition: all 0.3s ease;
+position: relative;
+overflow: hidden;
+}
+
+.btn-primary::before {
+content: '';
+position: absolute;
+top: 0;
+left: -100%;
+width: 100%;
+height: 100%;
+background: rgba(255, 255, 255, 0.2);
+transition: left 0.3s ease;
+}
+
+.btn-primary:hover::before {
+left: 100%;
+}
+
+.btn-primary:hover {
+transform: translateY(-2px);
+box-shadow: 0 10px 20px rgba(102, 126, 234, 0.4);
+}
+
+.btn-primary:disabled {
+opacity: 0.6;
+cursor: not-allowed;
+transform: none;
+}
+
+.input-modern {
+transition: all 0.3s ease;
+border: 2px solid #e2e8f0;
+}
+
+.input-modern:focus {
+outline: none;
+border-color: #6366f1;
+box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+}
+
+.stats-card {
+background: white;
+border-radius: 16px;
+padding: 24px;
+box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+border-left: 4px solid;
+}
+
+.fade-in {
+animation: fadeIn 0.5s ease-in;
+}
+
+@keyframes fadeIn {
+from { opacity: 0; transform: translateY(10px); }
+to { opacity: 1; transform: translateY(0); }
+}
+
+.toast-animation {
+animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+from { transform: translateX(100%); opacity: 0; }
+to { transform: translateX(0); opacity: 1; }
+}
+
+.loading {
+display: inline-block;
+width: 20px;
+height: 20px;
+border: 3px solid rgba(255,255,255,.3);
+border-radius: 50%;
+border-top-color: #fff;
+animation: spin 1s ease-in-out infinite;
+}
+
+@keyframes spin {
+to { transform: rotate(360deg); }
 }
 </style>
 </head>
+
 <body class="bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 min-h-screen">
 
 <!-- NAVBAR -->
-<nav class="bg-white shadow-lg sticky top-0 z-50 animate-slide">
+<nav class="bg-white shadow-lg sticky top-0 z-50 border-b-4 border-indigo-500">
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-<div class="flex justify-between items-center h-16">
-<div class="flex items-center gap-3">
-<div class="w-10 h-10 bg-gradient-to-br from-indigo-600 to-purple-600 rounded-xl flex items-center justify-center">
-<svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+<div class="flex justify-between items-center h-20">
+<div class="flex items-center space-x-4">
+<div class="w-12 h-12 gradient-bg rounded-xl flex items-center justify-center">
+<svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
 </svg>
 </div>
 <div>
-<h1 class="text-lg font-bold text-gray-800">Dashboard Karyawan</h1>
-<p class="text-xs text-gray-500">PT Properti Sejahtera</p>
+<h1 class="text-xl font-bold text-gray-800">Dashboard Karyawan</h1>
+<p class="text-xs text-gray-500 font-medium">Sistem Absensi & Pelaporan</p>
 </div>
 </div>
-<div class="flex items-center gap-4">
+
+<div class="flex items-center space-x-4">
+@if(session('login'))
 <div class="text-right hidden sm:block">
-<p class="text-sm font-semibold text-gray-800">{{ session('user') }}</p>
-<p class="text-xs text-gray-500">Karyawan Aktif</p>
+<p class="text-sm font-semibold text-gray-700">{{ session('user') }}</p>
+<p class="text-xs text-gray-500">Karyawan</p>
 </div>
-<a href="/logout" class="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors text-sm font-medium">
-Logout
+@endif
+<a href="/logout"
+class="bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white px-6 py-2.5 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105">
+<span class="flex items-center space-x-2">
+<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
+</svg>
+<span>Logout</span>
+</span>
 </a>
 </div>
 </div>
 </div>
 </nav>
 
-<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+<div class="max-w-7xl mx-auto mt-8 px-4 sm:px-6 lg:px-8 space-y-8 pb-8">
 
 <!-- WELCOME CARD -->
-<div class="bg-gradient-to-r from-indigo-600 to-purple-600 rounded-2xl p-6 md:p-8 text-white mb-8 animate-fade">
-<div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+<div class="gradient-bg text-white p-8 rounded-2xl shadow-2xl relative overflow-hidden fade-in">
+<div class="absolute top-0 right-0 w-64 h-64 bg-white opacity-5 rounded-full -mr-32 -mt-32"></div>
+<div class="absolute bottom-0 left-0 w-48 h-48 bg-white opacity-5 rounded-full -ml-24 -mb-24"></div>
+<div class="relative z-10 flex justify-between items-center flex-wrap gap-4">
 <div>
-<h2 class="text-2xl md:text-3xl font-bold mb-2">Selamat Datang, <span id="welcomeUser">Demo User</span>! 👋</h2>
-<p class="text-indigo-100">Kelola absensi dan laporan harian Anda dengan mudah</p>
+<h2 class="text-3xl font-bold mb-2 flex items-center space-x-3">
+<span>Halo, {{ session('user') ?? 'User' }}</span>
+<span class="text-4xl">👋</span>
+</h2>
+<p class="text-indigo-100 text-lg">Kelola absensi & laporan Anda dengan mudah</p>
 </div>
-<div class="bg-white/20 backdrop-blur-sm rounded-xl px-6 py-3">
-<p class="text-sm text-indigo-100">Tanggal Hari Ini</p>
-<p class="text-xl font-bold" id="currentDate">-</p>
+<div class="bg-white bg-opacity-20 backdrop-blur-sm px-6 py-3 rounded-xl">
+<p id="currentDate" class="font-semibold text-lg"></p>
+<p class="text-sm text-indigo-100">Hari ini</p>
 </div>
 </div>
 </div>
 
-<!-- ABSENSI CARD -->
-<div class="grid md:grid-cols-2 gap-6 mb-8">
-<!-- Absen Masuk -->
-<div class="bg-white rounded-2xl shadow-lg p-6 card-hover">
-<div class="flex items-start justify-between mb-4">
-<div>
-<h3 class="text-xl font-bold text-gray-800 mb-1">Absen Masuk</h3>
-<p class="text-sm text-gray-500">Catat waktu kedatangan Anda</p>
-</div>
+<!-- ABSENSI CARDS -->
+<div class="grid md:grid-cols-2 gap-6">
+
+<!-- Clock In Card -->
+<div class="stats-card card-hover border-green-500 fade-in">
+<div class="flex items-center justify-between mb-4">
+<h3 class="font-bold text-xl text-gray-800">Absen Masuk</h3>
 <div class="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center">
 <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"></path>
 </svg>
 </div>
 </div>
-<div class="mb-4">
-<p class="text-sm text-gray-600 mb-2">Waktu Masuk: <span id="clockInTime" class="font-semibold text-green-600">Belum Absen</span></p>
+<div class="mb-6">
+<p class="text-sm text-gray-500 mb-1">Waktu Masuk</p>
+<p class="text-3xl font-bold text-gray-800" id="clockInTime">--:--:--</p>
 </div>
-<button onclick="clockIn()" class="w-full btn-primary text-white py-3 rounded-xl font-semibold">
-Absen Masuk
+<button onclick="clockIn()" id="btnClockIn"
+class="btn-primary text-white w-full py-3.5 rounded-xl font-semibold shadow-lg text-lg">
+<span class="relative z-10 flex items-center justify-center space-x-2">
+<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+</svg>
+<span>Absen Masuk</span>
+</span>
 </button>
 </div>
 
-<!-- Absen Pulang -->
-<div class="bg-white rounded-2xl shadow-lg p-6 card-hover">
-<div class="flex items-start justify-between mb-4">
+<!-- Clock Out Card -->
+<div class="stats-card card-hover border-red-500 fade-in">
+<div class="flex items-center justify-between mb-4">
+<h3 class="font-bold text-xl text-gray-800">Absen Pulang</h3>
+<div class="w-12 h-12 bg-red-100 rounded-xl flex items-center justify-center">
+<svg class="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
+</svg>
+</div>
+</div>
+<div class="mb-4 grid grid-cols-2 gap-4">
 <div>
-<h3 class="text-xl font-bold text-gray-800 mb-1">Absen Pulang</h3>
-<p class="text-sm text-gray-500">Catat waktu kepulangan Anda</p>
+<p class="text-sm text-gray-500 mb-1">Waktu Pulang</p>
+<p class="text-2xl font-bold text-gray-800" id="clockOutTime">--:--:--</p>
 </div>
-<div class="w-12 h-12 bg-orange-100 rounded-xl flex items-center justify-center">
-<svg class="w-6 h-6 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
+<div>
+<p class="text-sm text-gray-500 mb-1">Total Jam Kerja</p>
+<p class="text-2xl font-bold text-indigo-600" id="workHours">0 jam</p>
+</div>
+</div>
+<button onclick="clockOut()" id="btnClockOut"
+class="btn-primary text-white w-full py-3.5 rounded-xl font-semibold shadow-lg text-lg">
+<span class="relative z-10 flex items-center justify-center space-x-2">
+<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
 </svg>
-</div>
-</div>
-<div class="mb-4">
-<p class="text-sm text-gray-600 mb-2">Waktu Pulang: <span id="clockOutTime" class="font-semibold text-orange-600">Belum Absen</span></p>
-<p class="text-sm text-gray-600">Jam Kerja: <span id="workHours" class="font-semibold text-indigo-600">0 jam</span></p>
-</div>
-<button onclick="clockOut()" class="w-full btn-primary text-white py-3 rounded-xl font-semibold">
-Absen Pulang
+<span>Absen Pulang</span>
+</span>
 </button>
 </div>
+
 </div>
 
-<!-- UANG MAKAN SUMMARY -->
-<div class="bg-white rounded-2xl shadow-lg p-6 mb-8 card-hover">
-<div class="flex items-center justify-between mb-6">
-<h3 class="text-xl font-bold text-gray-800">Ringkasan Uang Makan</h3>
-<div class="px-4 py-2 bg-indigo-100 rounded-lg">
-<span class="text-sm text-indigo-600 font-semibold">Rp 25.000 / 7 jam kerja</span>
-</div>
-</div>
-<div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-<div class="text-center p-4 bg-green-50 rounded-xl">
-<p class="text-sm text-gray-600 mb-1">Hari Ini</p>
-<p class="text-2xl font-bold text-green-600" id="todayMeal">Rp 0</p>
-</div>
-<div class="text-center p-4 bg-blue-50 rounded-xl">
-<p class="text-sm text-gray-600 mb-1">Minggu Ini</p>
-<p class="text-2xl font-bold text-blue-600" id="weekMeal">Rp 0</p>
-</div>
-<div class="text-center p-4 bg-purple-50 rounded-xl">
-<p class="text-sm text-gray-600 mb-1">Bulan Ini</p>
-<p class="text-2xl font-bold text-purple-600" id="monthMeal">Rp 0</p>
-</div>
-<div class="text-center p-4 bg-indigo-50 rounded-xl">
-<p class="text-sm text-gray-600 mb-1">Total Hari</p>
-<p class="text-2xl font-bold text-indigo-600" id="totalDays">0 hari</p>
-</div>
-</div>
+<!-- TABS SECTION -->
+<div class="bg-white p-8 rounded-2xl shadow-xl fade-in">
+
+<!-- Tab Headers -->
+<div class="flex border-b-2 border-gray-200 mb-6 overflow-x-auto">
+
+<button onclick="tabMenu('laporan')"
+id="tab-laporan"
+class="tab-active px-6 py-3 font-semibold text-base transition-all duration-300 whitespace-nowrap">
+<span class="flex items-center space-x-2">
+<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+</svg>
+<span>Laporan</span>
+</span>
+</button>
+
+<button onclick="tabMenu('feedback')"
+id="tab-feedback"
+class="px-6 py-3 font-semibold text-base text-gray-600 hover:text-indigo-600 transition-all duration-300 whitespace-nowrap">
+<span class="flex items-center space-x-2">
+<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z"></path>
+</svg>
+<span>Feedback</span>
+</span>
+</button>
+
+<button onclick="tabMenu('surat')"
+id="tab-surat"
+class="px-6 py-3 font-semibold text-base text-gray-600 hover:text-indigo-600 transition-all duration-300 whitespace-nowrap">
+<span class="flex items-center space-x-2">
+<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+</svg>
+<span>Surat</span>
+</span>
+</button>
+
 </div>
 
-<!-- TABS -->
-<div class="bg-white rounded-2xl shadow-lg p-6 mb-8">
-<div class="flex border-b border-gray-200 mb-6 overflow-x-auto">
-<button onclick="switchTab('laporan')" id="tab-laporan" class="tab-active px-6 py-3 text-sm whitespace-nowrap">Laporan Kerja</button>
-<button onclick="switchTab('feedback')" id="tab-feedback" class="px-6 py-3 text-sm text-gray-600 hover:text-indigo-600 whitespace-nowrap">Feedback Karyawan</button>
-<button onclick="switchTab('surat')" id="tab-surat" class="px-6 py-3 text-sm text-gray-600 hover:text-indigo-600 whitespace-nowrap">Nomor Surat</button>
-</div>
-
-<!-- TAB CONTENT LAPORAN -->
+<!-- ========== LAPORAN ========== -->
 <div id="content-laporan">
-<div class="flex justify-between items-center mb-6">
-<h3 class="text-xl font-bold text-gray-800">Laporan Kerja Saya</h3>
-<div class="flex gap-2">
-<button onclick="showReportType('daily')" id="btn-daily" class="px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-medium">Harian</button>
-<button onclick="showReportType('weekly')" id="btn-weekly" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg text-sm font-medium">Mingguan</button>
-<button onclick="showReportType('monthly')" id="btn-monthly" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg text-sm font-medium">Bulanan</button>
-</div>
+
+<form id="reportForm" onsubmit="submitReport(event)" class="space-y-5">
+
+<div>
+<label class="block text-sm font-semibold text-gray-700 mb-2">Tanggal Laporan</label>
+<input type="date" id="reportDate" required
+class="input-modern w-full p-3 rounded-xl">
 </div>
 
-<form id="reportForm" class="space-y-4 mb-6" onsubmit="submitReport(event)">
 <div>
-<label class="block text-sm font-semibold text-gray-700 mb-2">Tanggal</label>
-<input type="date" id="reportDate" required class="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-indigo-500 outline-none">
+<label class="block text-sm font-semibold text-gray-700 mb-2">Aktivitas Hari Ini</label>
+<textarea id="reportActivity" required
+class="input-modern w-full p-3 rounded-xl min-h-[120px]"
+placeholder="Deskripsikan aktivitas dan pencapaian hari ini..."></textarea>
 </div>
+
 <div>
-<label class="block text-sm font-semibold text-gray-700 mb-2">Aktivitas Pekerjaan</label>
-<textarea id="reportActivity" rows="4" required placeholder="Jelaskan aktivitas yang Anda kerjakan hari ini..." class="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-indigo-500 outline-none resize-none"></textarea>
-</div>
-<div>
-<label class="block text-sm font-semibold text-gray-700 mb-2">Upload Bukti (Screenshot/Foto/Dokumen)</label>
-<div class="border-2 border-dashed border-gray-300 rounded-xl p-6 text-center hover:border-indigo-500 transition-colors cursor-pointer">
-<input type="file" id="reportFile" accept="image/*,.pdf" class="hidden" onchange="handleFileSelect(event)">
+<label class="block text-sm font-semibold text-gray-700 mb-2">Lampiran (Opsional)</label>
+<div class="border-2 border-dashed border-gray-300 rounded-xl p-6 text-center hover:border-indigo-400 transition-colors">
+<input type="file" id="reportFile" class="hidden" onchange="updateFileName(this, 'fileNameReport')">
 <label for="reportFile" class="cursor-pointer">
 <svg class="w-12 h-12 text-gray-400 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
+<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
 </svg>
-<p class="text-sm text-gray-600">Klik untuk upload atau drag & drop</p>
-<p class="text-xs text-gray-400 mt-1">PNG, JPG, PDF hingga 10MB</p>
-<p id="fileName" class="text-xs text-indigo-600 mt-2 font-semibold"></p>
+<p class="text-sm text-gray-600 font-medium" id="fileNameReport">Klik untuk upload file</p>
 </label>
 </div>
 </div>
-<button type="submit" class="w-full btn-primary text-white py-3 rounded-xl font-semibold">Simpan Laporan</button>
+
+<button type="submit" id="btnSubmitReport"
+class="btn-primary text-white w-full py-4 rounded-xl font-bold text-lg shadow-lg">
+<span class="relative z-10 flex items-center justify-center space-x-2">
+<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+</svg>
+<span>Simpan Laporan</span>
+</span>
+</button>
+
 </form>
 
-<div class="bg-gray-50 rounded-xl p-4">
-<h4 class="font-semibold text-gray-800 mb-3">Riwayat Laporan Saya</h4>
-<p class="text-xs text-gray-500 mb-3">💡 Hanya Anda yang bisa melihat laporan ini. Admin dapat melihat untuk evaluasi.</p>
-<div id="reportHistory" class="space-y-2"></div>
+<div class="mt-8">
+<h4 class="font-bold text-lg text-gray-800 mb-4 flex items-center space-x-2">
+<svg class="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+</svg>
+<span>Riwayat Laporan</span>
+</h4>
+<div id="reportHistory" class="space-y-3">
+<div class="text-center py-8">
+<div class="loading mx-auto mb-2" style="border-top-color: #6366f1;"></div>
+<p class="text-gray-400">Memuat data...</p>
+</div>
 </div>
 </div>
 
-<!-- TAB CONTENT FEEDBACK -->
+</div>
+
+<!-- ========== FEEDBACK ========== -->
 <div id="content-feedback" class="hidden">
-<h3 class="text-xl font-bold text-gray-800 mb-6">Feedback untuk Karyawan</h3>
-<form id="feedbackForm" class="space-y-4" onsubmit="submitFeedback(event)">
+
+<form id="feedbackForm" onsubmit="submitFeedback(event)" class="space-y-5">
+
 <div>
-<label class="block text-sm font-semibold text-gray-700 mb-2">Pilih Karyawan</label>
-<select id="feedbackEmployee" required class="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-indigo-500 outline-none">
+<label class="block text-sm font-semibold text-gray-700 mb-2">Karyawan Tujuan</label>
+<select id="feedbackEmployee" required
+class="input-modern w-full p-3 rounded-xl">
 <option value="">-- Pilih Karyawan --</option>
-<option>Budi Santoso</option>
-<option>Siti Aminah</option>
-<option>Andi Wijaya</option>
-<option>Dewi Lestari</option>
+<option>Budi</option>
+<option>Siti</option>
+<option>Andi</option>
 </select>
 </div>
+
 <div>
-<label class="block text-sm font-semibold text-gray-700 mb-2">Kategori Feedback</label>
-<select id="feedbackCategory" required class="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-indigo-500 outline-none">
+<label class="block text-sm font-semibold text-gray-700 mb-2">Kategori</label>
+<select id="feedbackCategory" required
+class="input-modern w-full p-3 rounded-xl">
 <option value="">-- Pilih Kategori --</option>
-<option>👍 Apresiasi</option>
-<option>💡 Saran</option>
-<option>⚠️ Keluhan</option>
-<option>📊 Evaluasi Kinerja</option>
+<option>Apresiasi</option>
+<option>Saran</option>
+<option>Keluhan</option>
 </select>
 </div>
+
 <div>
 <label class="block text-sm font-semibold text-gray-700 mb-2">Pesan Feedback</label>
-<textarea id="feedbackMessage" rows="5" required placeholder="Tulis feedback Anda di sini..." class="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-indigo-500 outline-none resize-none"></textarea>
+<textarea id="feedbackMessage" required
+class="input-modern w-full p-3 rounded-xl min-h-[120px]"
+placeholder="Tulis feedback Anda di sini..."></textarea>
 </div>
-<div class="flex items-center gap-2">
-<input type="checkbox" id="anonymous" class="w-4 h-4 text-indigo-600 rounded">
-<label for="anonymous" class="text-sm text-gray-600">Kirim sebagai anonim</label>
+
+<div class="flex items-center space-x-3 bg-gray-50 p-4 rounded-xl">
+<input type="checkbox" id="anonymous" class="w-5 h-5 text-indigo-600 rounded">
+<label for="anonymous" class="font-medium text-gray-700">Kirim sebagai Anonim</label>
 </div>
-<button type="submit" class="w-full btn-primary text-white py-3 rounded-xl font-semibold">Kirim Feedback</button>
+
+<button type="submit" id="btnSubmitFeedback"
+class="btn-primary text-white w-full py-4 rounded-xl font-bold text-lg shadow-lg">
+<span class="relative z-10 flex items-center justify-center space-x-2">
+<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
+</svg>
+<span>Kirim Feedback</span>
+</span>
+</button>
+
 </form>
 
-<div class="mt-6 bg-gray-50 rounded-xl p-4">
-<h4 class="font-semibold text-gray-800 mb-3">Feedback yang Saya Kirim</h4>
-<p class="text-xs text-gray-500 mb-3">💡 Hanya Anda yang bisa melihat feedback ini. Admin dapat melihat untuk tindak lanjut.</p>
-<div id="feedbackHistory" class="space-y-2"></div>
-</div>
-</div>
-
-<!-- TAB CONTENT SURAT -->
-<div id="content-surat" class="hidden">
-<h3 class="text-xl font-bold text-gray-800 mb-4">Pencatatan Nomor Surat Menyurat</h3>
-<div class="bg-blue-50 border-l-4 border-blue-500 p-4 mb-6 rounded-lg">
-<div class="flex">
-<div class="flex-shrink-0">
-<svg class="h-5 w-5 text-blue-500" fill="currentColor" viewBox="0 0 20 20">
-<path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
+<div class="mt-8">
+<h4 class="font-bold text-lg text-gray-800 mb-4 flex items-center space-x-2">
+<svg class="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z"></path>
 </svg>
-</div>
-<div class="ml-3">
-<p class="text-sm text-blue-700"><strong>Info:</strong> Nomor surat akan digenerate otomatis oleh sistem. Anda hanya perlu mengisi detail surat.</p>
+<span>Riwayat Feedback</span>
+</h4>
+<div id="feedbackHistory" class="space-y-3">
+<div class="text-center py-8">
+<div class="loading mx-auto mb-2" style="border-top-color: #6366f1;"></div>
+<p class="text-gray-400">Memuat data...</p>
 </div>
 </div>
 </div>
 
-<form id="letterForm" class="space-y-4" onsubmit="submitLetter(event)">
+</div>
+
+<!-- ========== SURAT ========== -->
+<div id="content-surat" class="hidden">
+
+<form id="letterForm" onsubmit="submitLetter(event)" class="space-y-5">
+
 <div>
-<label class="block text-sm font-semibold text-gray-700 mb-2">Pilih PT</label>
-<select id="letterCompany" required class="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-indigo-500 outline-none">
-<option value="">-- Pilih PT --</option>
-<option value="PSJ">PT Properti Sejahtera</option>
-<option value="MBJ">PT Maju Bersama</option>
-<option value="SG">PT Sukses Gemilang</option>
-<option value="BJ">PT Berkah Jaya</option>
+<label class="block text-sm font-semibold text-gray-700 mb-2">Perusahaan</label>
+<select id="letterCompany" required
+class="input-modern w-full p-3 rounded-xl">
+<option value="">Loading...</option>
 </select>
 </div>
+
 <div>
 <label class="block text-sm font-semibold text-gray-700 mb-2">Tanggal Surat</label>
-<input type="date" id="letterDate" required class="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-indigo-500 outline-none">
+<input type="date" id="letterDate" required
+class="input-modern w-full p-3 rounded-xl">
 </div>
+
 <div>
 <label class="block text-sm font-semibold text-gray-700 mb-2">Perihal</label>
-<input type="text" id="letterSubject" required placeholder="Contoh: Permohonan Cuti" class="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-indigo-500 outline-none">
+<input type="text" id="letterSubject" required
+class="input-modern w-full p-3 rounded-xl"
+placeholder="Masukkan perihal surat">
 </div>
+
 <div>
 <label class="block text-sm font-semibold text-gray-700 mb-2">Tujuan</label>
-<input type="text" id="letterTo" required placeholder="Kepada Yth. HRD / Manager" class="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-indigo-500 outline-none">
+<input type="text" id="letterTo" required
+class="input-modern w-full p-3 rounded-xl"
+placeholder="Masukkan nama penerima">
 </div>
-<button type="submit" class="w-full btn-primary text-white py-3 rounded-xl font-semibold">Buat Surat</button>
+
+<button type="submit" id="btnSubmitLetter"
+class="btn-primary text-white w-full py-4 rounded-xl font-bold text-lg shadow-lg">
+<span class="relative z-10 flex items-center justify-center space-x-2">
+<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+</svg>
+<span>Buat Surat</span>
+</span>
+</button>
+
 </form>
 
-<div class="mt-6 bg-gray-50 rounded-xl p-4">
-<h4 class="font-semibold text-gray-800 mb-3">Riwayat Surat Saya</h4>
-<p class="text-xs text-gray-500 mb-3">💡 Hanya Anda yang bisa melihat surat ini. Admin dapat melihat untuk arsip resmi.</p>
-<div id="letterHistory" class="space-y-2"></div>
+<div class="mt-8">
+<h4 class="font-bold text-lg text-gray-800 mb-4 flex items-center space-x-2">
+<svg class="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+</svg>
+<span>Riwayat Surat</span>
+</h4>
+<div id="letterHistory" class="space-y-3">
+<div class="text-center py-8">
+<div class="loading mx-auto mb-2" style="border-top-color: #6366f1;"></div>
+<p class="text-gray-400">Memuat data...</p>
 </div>
 </div>
 </div>
 
 </div>
 
-<!-- Toast Notification Container -->
+</div>
+</div>
+
+<!-- TOAST CONTAINER -->
 <div id="toastContainer" class="fixed bottom-5 right-5 space-y-2 z-50"></div>
 
+<!-- ================= JAVASCRIPT ================= -->
 <script>
-// ===== Current User =====
-// Ini akan ambil dari backend session nanti
-let currentUser = "Demo User";
 
-document.getElementById('userName').textContent = currentUser;
-document.getElementById('welcomeUser').textContent = currentUser;
-document.getElementById('currentDate').textContent = new Date().toLocaleDateString('id-ID',{
-    weekday:'long', year:'numeric', month:'long', day:'numeric'
+/* ELEMENTS */
+const currentDate = document.getElementById('currentDate');
+const clockInTime = document.getElementById('clockInTime');
+const clockOutTime = document.getElementById('clockOutTime');
+const workHours = document.getElementById('workHours');
+
+const reportDate = document.getElementById('reportDate');
+const reportForm = document.getElementById('reportForm');
+const reportActivity = document.getElementById('reportActivity');
+const reportFile = document.getElementById('reportFile');
+const reportHistory = document.getElementById('reportHistory');
+
+const feedbackForm = document.getElementById('feedbackForm');
+const feedbackEmployee = document.getElementById('feedbackEmployee');
+const feedbackCategory = document.getElementById('feedbackCategory');
+const feedbackMessage = document.getElementById('feedbackMessage');
+const anonymous = document.getElementById('anonymous');
+const feedbackHistory = document.getElementById('feedbackHistory');
+
+const letterForm = document.getElementById('letterForm');
+const letterCompany = document.getElementById('letterCompany');
+const letterDate = document.getElementById('letterDate');
+const letterSubject = document.getElementById('letterSubject');
+const letterTo = document.getElementById('letterTo');
+const letterHistory = document.getElementById('letterHistory');
+
+const csrf = document.querySelector('meta[name="csrf-token"]').content;
+
+/* INITIALIZE DATE */
+currentDate.innerHTML = new Date().toLocaleDateString('id-ID',{
+weekday:'long',
+day:'numeric',
+month:'long',
+year:'numeric'
 });
-document.getElementById('reportDate').valueAsDate = new Date();
-document.getElementById('letterDate').valueAsDate = new Date();
 
-// ===== Toast =====
-function showToast(message, type='success'){
-    const container = document.getElementById('toastContainer');
-    const colors = {
-        success: 'bg-green-500 text-white',
-        error: 'bg-red-500 text-white',
-        info: 'bg-blue-500 text-white'
-    };
-    const toast = document.createElement('div');
-    toast.className = `px-4 py-3 rounded shadow ${colors[type]} opacity-0 translate-y-6`;
-    toast.textContent = message;
-    container.appendChild(toast);
-    setTimeout(()=>{
-        toast.style.transition = "all 0.4s ease";
-        toast.style.opacity = "1";
-        toast.style.transform = "translateY(0)";
-    },50);
-    setTimeout(()=>{
-        toast.style.opacity = "0";
-        toast.style.transform = "translateY(20px)";
-        setTimeout(()=>container.removeChild(toast),400);
-    },3000);
+reportDate.valueAsDate = new Date();
+letterDate.valueAsDate = new Date();
+
+/* TOAST NOTIFICATION */
+function toast(msg, type = 'success'){
+let bgColor = type === 'success' ? 'from-indigo-600 to-purple-600' : 'from-red-500 to-red-600';
+let d = document.createElement('div');
+d.className = `toast-animation bg-gradient-to-r ${bgColor} text-white px-6 py-4 rounded-xl shadow-2xl flex items-center space-x-3`;
+d.innerHTML = `
+<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="${type === 'success' ? 'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z' : 'M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z'}"></path>
+</svg>
+<span class="font-semibold">${msg}</span>
+`;
+toastContainer.appendChild(d);
+setTimeout(()=>{
+d.style.animation = 'slideIn 0.3s ease-out reverse';
+setTimeout(()=>d.remove(), 300);
+}, 3000);
 }
 
-// ===== Absensi =====
-let clockInData=null, clockOutData=null;
+/* UPDATE FILE NAME */
+function updateFileName(input, targetId) {
+const fileName = input.files[0]?.name || 'Klik untuk upload file';
+document.getElementById(targetId).textContent = fileName;
+}
+
+/* TAB MENU */
+function tabMenu(x){
+['laporan','feedback','surat'].forEach(t=>{
+document.getElementById('content-'+t).classList.add('hidden');
+document.getElementById('tab-'+t).classList.remove('tab-active', 'text-indigo-600');
+document.getElementById('tab-'+t).classList.add('text-gray-600', 'hover:text-indigo-600');
+});
+
+document.getElementById('content-'+x).classList.remove('hidden');
+document.getElementById('tab-'+x).classList.add('tab-active', 'text-indigo-600');
+document.getElementById('tab-'+x).classList.remove('text-gray-600', 'hover:text-indigo-600');
+}
+
+/* ============ LOAD COMPANIES ============ */
+async function loadCompanies(){
+try {
+let response = await fetch('/api/companies');
+let data = await response.json();
+let html = '<option value="">-- Pilih Perusahaan --</option>';
+data.forEach(company => {
+html += `<option value="${company.id}">${company.name}</option>`;
+});
+letterCompany.innerHTML = html;
+} catch(error) {
+console.error('Error loading companies:', error);
+letterCompany.innerHTML = '<option>Error loading data</option>';
+toast('Gagal memuat data perusahaan', 'error');
+}
+}
+
+/* ============ ATTENDANCE ============ */
+let clockInData = null;
+
+// Load today's attendance
+async function loadTodayAttendance(){
+try {
+let response = await fetch('/api/attendance/history');
+let data = await response.json();
+
+if(data.length > 0) {
+let today = data.find(att => att.date === new Date().toISOString().split('T')[0]);
+if(today) {
+if(today.clock_in) {
+clockInData = new Date(`${today.date} ${today.clock_in}`);
+clockInTime.innerHTML = today.clock_in;
+document.getElementById('btnClockIn').disabled = true;
+document.getElementById('btnClockIn').innerHTML = '<span class="relative z-10">✓ Sudah Absen Masuk</span>';
+}
+if(today.clock_out) {
+clockOutTime.innerHTML = today.clock_out;
+document.getElementById('btnClockOut').disabled = true;
+document.getElementById('btnClockOut').innerHTML = '<span class="relative z-10">✓ Sudah Absen Pulang</span>';
+if(today.work_hours) {
+workHours.innerHTML = today.work_hours.toFixed(1) + ' jam';
+}
+}
+}
+}
+} catch(error) {
+console.log('No attendance data for today');
+}
+}
 
 async function clockIn(){
-    const now = new Date();
-    clockInData = now;
-    document.getElementById('clockInTime').textContent = now.toLocaleTimeString('id-ID');
+const btn = document.getElementById('btnClockIn');
+btn.disabled = true;
+btn.innerHTML = '<span class="relative z-10"><div class="loading"></div></span>';
 
-    try{
-        const res = await fetch('/api/attendance/clock-in', {
-            method: 'POST',
-            headers: {'Content-Type':'application/json'},
-            body: JSON.stringify({time: now.toISOString()})
-        });
-        const data = await res.json();
-        if(data.success){
-            showToast('✅ Absen masuk berhasil dicatat!');
-        } else showToast('⚠️ Gagal absen masuk','error');
-    }catch(e){showToast('⚠️ Terjadi kesalahan jaringan','error');}
-
-    calculateWorkHours();
+try {
+let response = await fetch('/api/attendance/clock-in', {
+method: 'POST',
+headers: {
+'X-CSRF-TOKEN': csrf,
+'Content-Type': 'application/json'
+}
+});
+let data = await response.json();
+if(data.success){
+clockInData = new Date();
+clockInTime.innerHTML = clockInData.toLocaleTimeString('id-ID');
+toast('✓ Absen masuk berhasil dicatat');
+btn.innerHTML = '<span class="relative z-10">✓ Sudah Absen Masuk</span>';
+} else {
+btn.disabled = false;
+btn.innerHTML = '<span class="relative z-10 flex items-center justify-center space-x-2"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg><span>Absen Masuk</span></span>';
+toast(data.message || 'Gagal absen masuk', 'error');
+}
+} catch(error) {
+console.error('Error clock in:', error);
+btn.disabled = false;
+btn.innerHTML = '<span class="relative z-10 flex items-center justify-center space-x-2"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg><span>Absen Masuk</span></span>';
+toast('❌ Gagal absen masuk', 'error');
+}
 }
 
 async function clockOut(){
-    if(!clockInData){showToast('⚠️ Anda belum absen masuk!','error'); return;}
-    const now = new Date();
-    clockOutData = now;
-    document.getElementById('clockOutTime').textContent = now.toLocaleTimeString('id-ID');
-
-    try{
-        const res = await fetch('/api/attendance/clock-out', {
-            method: 'POST',
-            headers: {'Content-Type':'application/json'},
-            body: JSON.stringify({time: now.toISOString()})
-        });
-        const data = await res.json();
-        if(data.success){
-            showToast('✅ Absen pulang berhasil dicatat!');
-        } else showToast('⚠️ Gagal absen pulang','error');
-    }catch(e){showToast('⚠️ Terjadi kesalahan jaringan','error');}
-
-    calculateWorkHours();
+if(!clockInData) {
+toast('⚠️ Anda belum absen masuk', 'error');
+return;
 }
 
-function calculateWorkHours(){
-    if(clockInData && clockOutData){
-        const diff = clockOutData - clockInData;
-        const hours = (diff/(1000*60*60)).toFixed(1);
-        document.getElementById('workHours').textContent = hours+' jam';
-        if(hours>=7){
-            document.getElementById('todayMeal').textContent='Rp 25.000';
-            document.getElementById('weekMeal').textContent='Rp 125.000';
-            document.getElementById('monthMeal').textContent='Rp 500.000';
-            document.getElementById('totalDays').textContent='20 hari';
-        } else { document.getElementById('todayMeal').textContent='Rp 0'; }
-    }
+const btn = document.getElementById('btnClockOut');
+btn.disabled = true;
+btn.innerHTML = '<span class="relative z-10"><div class="loading"></div></span>';
+
+try {
+let response = await fetch('/api/attendance/clock-out', {
+method: 'POST',
+headers: {
+'X-CSRF-TOKEN': csrf,
+'Content-Type': 'application/json'
+}
+});
+let data = await response.json();
+if(data.success){
+let out = new Date();
+clockOutTime.innerHTML = out.toLocaleTimeString('id-ID');
+
+let diff = (out - clockInData) / 3600000;
+workHours.innerHTML = diff.toFixed(1) + ' jam';
+
+toast('✓ Absen pulang berhasil dicatat');
+btn.innerHTML = '<span class="relative z-10">✓ Sudah Absen Pulang</span>';
+} else {
+btn.disabled = false;
+btn.innerHTML = '<span class="relative z-10 flex items-center justify-center space-x-2"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg><span>Absen Pulang</span></span>';
+toast(data.message || 'Gagal absen pulang', 'error');
+}
+} catch(error) {
+console.error('Error clock out:', error);
+btn.disabled = false;
+btn.innerHTML = '<span class="relative z-10 flex items-center justify-center space-x-2"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg><span>Absen Pulang</span></span>';
+toast('❌ Gagal absen pulang', 'error');
+}
 }
 
-// ===== Tabs =====
-function switchTab(tab){
-    ['laporan','feedback','surat'].forEach(t=>{
-        document.getElementById('content-'+t).classList.add('hidden');
-        document.getElementById('tab-'+t).classList.remove('tab-active');
-    });
-    document.getElementById('content-'+tab).classList.remove('hidden');
-    document.getElementById('tab-'+tab).classList.add('tab-active');
-}
-
-// ===== Report Type Switch =====
-function showReportType(type){
-    ['daily','weekly','monthly'].forEach(t=>{
-        const btn=document.getElementById('btn-'+t);
-        if(t===type){btn.classList.remove('bg-gray-200','text-gray-700'); btn.classList.add('bg-indigo-600','text-white');}
-        else{btn.classList.remove('bg-indigo-600','text-white'); btn.classList.add('bg-gray-200','text-gray-700');}
-    });
-}
-
-// ===== Submit Report =====
+/* ============ REPORTS ============ */
 async function submitReport(e){
-    e.preventDefault();
-    const date = document.getElementById('reportDate').value;
-    const activity = document.getElementById('reportActivity').value;
-    const fileInput = document.getElementById('reportFile');
-    const formData = new FormData();
-    formData.append('date', date);
-    formData.append('activity', activity);
-    if(fileInput.files[0]) formData.append('file', fileInput.files[0]);
+e.preventDefault();
 
-    try{
-        const res = await fetch('/api/reports', {method:'POST', body: formData});
-        const data = await res.json();
-        if(data.success){
-            showToast('✅ Laporan berhasil disimpan!');
-            document.getElementById('reportForm').reset();
-            loadReportHistory();
-        } else showToast('⚠️ Gagal menyimpan laporan','error');
-    }catch(e){showToast('⚠️ Terjadi kesalahan jaringan','error');}
+const btn = document.getElementById('btnSubmitReport');
+btn.disabled = true;
+btn.innerHTML = '<span class="relative z-10"><div class="loading"></div> Menyimpan...</span>';
+
+try {
+let formData = new FormData();
+formData.append('date', reportDate.value);
+formData.append('activity', reportActivity.value);
+
+if(reportFile.files[0]) {
+formData.append('file', reportFile.files[0]);
 }
 
-// ===== Submit Feedback =====
-async function submitFeedback(e){
-    e.preventDefault();
-    const employee = document.getElementById('feedbackEmployee').value;
-    const category = document.getElementById('feedbackCategory').value;
-    const message = document.getElementById('feedbackMessage').value;
-    const anonymous = document.getElementById('anonymous').checked;
-
-    try{
-        const res = await fetch('/api/feedbacks', {
-            method: 'POST',
-            headers: {'Content-Type':'application/json'},
-            body: JSON.stringify({employee, category, message, anonymous})
-        });
-        const data = await res.json();
-        if(data.success){
-            showToast('✅ Feedback berhasil dikirim!');
-            document.getElementById('feedbackForm').reset();
-            loadFeedbackHistory();
-        } else showToast('⚠️ Gagal mengirim feedback','error');
-    }catch(e){showToast('⚠️ Terjadi kesalahan jaringan','error');}
+let response = await fetch('/api/reports', {
+method: 'POST',
+headers: {
+'X-CSRF-TOKEN': csrf
+},
+body: formData
+});
+let data = await response.json();
+if(data.success){
+toast('✓ Laporan berhasil disimpan');
+reportForm.reset();
+reportDate.valueAsDate = new Date();
+document.getElementById('fileNameReport').textContent = 'Klik untuk upload file';
+loadReportHistory();
+} else {
+toast(data.message || 'Gagal menyimpan laporan', 'error');
+}
+} catch(error) {
+console.error('Error submit report:', error);
+toast('❌ Gagal menyimpan laporan', 'error');
+} finally {
+btn.disabled = false;
+btn.innerHTML = '<span class="relative z-10 flex items-center justify-center space-x-2"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg><span>Simpan Laporan</span></span>';
+}
 }
 
-// ===== Submit Letter =====
-async function submitLetter(e){
-    e.preventDefault();
-    const company = document.getElementById('letterCompany').value;
-    const date = document.getElementById('letterDate').value;
-    const subject = document.getElementById('letterSubject').value;
-    const to = document.getElementById('letterTo').value;
-
-    try{
-        const res = await fetch('/api/letters', {
-            method:'POST',
-            headers:{'Content-Type':'application/json'},
-            body: JSON.stringify({company,date,subject,to})
-        });
-        const data = await res.json();
-        if(data.success){
-            showToast('✅ Surat berhasil dibuat!');
-            document.getElementById('letterForm').reset();
-            loadLetterHistory();
-        } else showToast('⚠️ Gagal membuat surat','error');
-    }catch(e){showToast('⚠️ Terjadi kesalahan jaringan','error');}
-}
-
-// ===== Load Histories =====
 async function loadReportHistory(){
-    try{
-        const res = await fetch('/api/reports');
-        const reports = await res.json();
-        const container = document.getElementById('reportHistory');
-        container.innerHTML='';
-        reports.reverse().forEach(r=>{
-            const div=document.createElement('div');
-            div.className='p-3 bg-white rounded-lg shadow-sm';
-            div.innerHTML=`<p class="text-sm font-semibold">${r.date}</p><p class="text-gray-600">${r.activity}</p><p class="text-xs text-indigo-600 mt-1">Bukti: ${r.file||'Tidak ada'}</p>`;
-            container.appendChild(div);
-        });
-    }catch(e){showToast('⚠️ Gagal memuat laporan','error');}
+try {
+let response = await fetch('/api/reports');
+let data = await response.json();
+reportHistory.innerHTML = '';
+if(data.length > 0) {
+data.reverse().forEach(report => {
+reportHistory.innerHTML += `
+<div class="bg-gradient-to-r from-indigo-50 to-purple-50 p-4 rounded-xl border-l-4 border-indigo-500 hover:shadow-md transition-shadow">
+<div class="flex justify-between items-start mb-2">
+<span class="font-bold text-indigo-700">${new Date(report.report_date).toLocaleDateString('id-ID')}</span>
+<span class="text-xs text-gray-500">${new Date(report.created_at).toLocaleTimeString('id-ID', {hour: '2-digit', minute: '2-digit'})}</span>
+</div>
+<p class="text-gray-700">${report.activity}</p>
+${report.file ? '<p class="text-xs text-indigo-600 mt-2">📎 File terlampir</p>' : ''}
+</div>`;
+});
+} else {
+reportHistory.innerHTML = '<p class="text-center text-gray-400 py-8">Belum ada laporan</p>';
+}
+} catch(error) {
+console.error('Error loading reports:', error);
+reportHistory.innerHTML = '<p class="text-center text-red-400 py-8">Gagal memuat data</p>';
+}
+}
+
+/* ============ FEEDBACK ============ */
+async function submitFeedback(e){
+e.preventDefault();
+
+const btn = document.getElementById('btnSubmitFeedback');
+btn.disabled = true;
+btn.innerHTML = '<span class="relative z-10"><div class="loading"></div> Mengirim...</span>';
+
+try {
+let response = await fetch('/api/feedbacks', {
+method: 'POST',
+headers: {
+'Content-Type': 'application/json',
+'X-CSRF-TOKEN': csrf
+},
+body: JSON.stringify({
+to: feedbackEmployee.value,
+category: feedbackCategory.value,
+message: feedbackMessage.value,
+anonymous: anonymous.checked
+})
+});
+let data = await response.json();
+if(data.success){
+toast('✓ Feedback berhasil dikirim');
+feedbackForm.reset();
+loadFeedbackHistory();
+} else {
+toast(data.message || 'Gagal mengirim feedback', 'error');
+}
+} catch(error) {
+console.error('Error submit feedback:', error);
+toast('❌ Gagal mengirim feedback', 'error');
+} finally {
+btn.disabled = false;
+btn.innerHTML = '<span class="relative z-10 flex items-center justify-center space-x-2"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path></svg><span>Kirim Feedback</span></span>';
+}
 }
 
 async function loadFeedbackHistory(){
-    try{
-        const res = await fetch('/api/feedbacks');
-        const feedbacks = await res.json();
-        const container = document.getElementById('feedbackHistory');
-        container.innerHTML='';
-        feedbacks.reverse().forEach(f=>{
-            const div=document.createElement('div');
-            div.className='p-3 bg-white rounded-lg shadow-sm';
-            div.innerHTML=`<p class="text-sm font-semibold">${f.anonymous?'Anonim':f.employee} - ${f.category}</p><p class="text-gray-600">${f.message}</p>`;
-            container.appendChild(div);
-        });
-    }catch(e){showToast('⚠️ Gagal memuat feedback','error');}
+try {
+let response = await fetch('/api/feedbacks');
+let data = await response.json();
+feedbackHistory.innerHTML = '';
+if(data.length > 0) {
+data.reverse().forEach(feedback => {
+feedbackHistory.innerHTML += `
+<div class="bg-gradient-to-r from-blue-50 to-indigo-50 p-4 rounded-xl border-l-4 border-blue-500 hover:shadow-md transition-shadow">
+<div class="flex justify-between items-start mb-2">
+<span class="font-bold text-blue-700">${feedback.anonymous ? '🔒 Anonim' : feedback.to_employee}</span>
+<span class="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded-full">${feedback.category}</span>
+</div>
+<p class="text-gray-700">${feedback.message}</p>
+<p class="text-xs text-gray-500 mt-2">${new Date(feedback.created_at).toLocaleDateString('id-ID')}</p>
+</div>`;
+});
+} else {
+feedbackHistory.innerHTML = '<p class="text-center text-gray-400 py-8">Belum ada feedback</p>';
+}
+} catch(error) {
+console.error('Error loading feedback:', error);
+feedbackHistory.innerHTML = '<p class="text-center text-red-400 py-8">Gagal memuat data</p>';
+}
+}
+
+/* ============ LETTERS ============ */
+async function submitLetter(e){
+e.preventDefault();
+
+const btn = document.getElementById('btnSubmitLetter');
+btn.disabled = true;
+btn.innerHTML = '<span class="relative z-10"><div class="loading"></div> Membuat...</span>';
+
+try {
+let response = await fetch('/api/letters', {
+method: 'POST',
+headers: {
+'Content-Type': 'application/json',
+'X-CSRF-TOKEN': csrf
+},
+body: JSON.stringify({
+company: letterCompany.value,
+date: letterDate.value,
+subject: letterSubject.value,
+to: letterTo.value
+})
+});
+let data = await response.json();
+if(data.success){
+toast('✓ Surat berhasil dibuat');
+letterForm.reset();
+letterDate.valueAsDate = new Date();
+letterCompany.selectedIndex = 0;
+loadLetterHistory();
+} else {
+toast(data.message || 'Gagal membuat surat', 'error');
+}
+} catch(error) {
+console.error('Error submit letter:', error);
+toast('❌ Gagal membuat surat', 'error');
+} finally {
+btn.disabled = false;
+btn.innerHTML = '<span class="relative z-10 flex items-center justify-center space-x-2"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg><span>Buat Surat</span></span>';
+}
 }
 
 async function loadLetterHistory(){
-    try{
-        const res = await fetch('/api/letters');
-        const letters = await res.json();
-        const container = document.getElementById('letterHistory');
-        container.innerHTML='';
-        letters.reverse().forEach(l=>{
-            const div=document.createElement('div');
-            div.className='p-3 bg-white rounded-lg shadow-sm';
-            div.innerHTML=`<p class="text-sm font-semibold">${l.date} - ${l.number}</p><p class="text-gray-600">Tujuan: ${l.to} | Perihal: ${l.subject}</p>`;
-            container.appendChild(div);
-        });
-    }catch(e){showToast('⚠️ Gagal memuat surat','error');}
+try {
+let response = await fetch('/api/letters');
+let data = await response.json();
+letterHistory.innerHTML = '';
+if(data.length > 0) {
+data.reverse().forEach(letter => {
+letterHistory.innerHTML += `
+<div class="bg-gradient-to-r from-green-50 to-emerald-50 p-4 rounded-xl border-l-4 border-green-500 hover:shadow-md transition-shadow">
+<div class="flex justify-between items-start mb-2">
+<span class="font-bold text-green-700">${letter.letter_number}</span>
+<span class="text-xs text-gray-500">${new Date(letter.letter_date).toLocaleDateString('id-ID')}</span>
+</div>
+<p class="font-semibold text-gray-800">${letter.subject}</p>
+<p class="text-sm text-gray-600">Kepada: ${letter.letter_to}</p>
+${letter.company ? `<p class="text-xs text-green-600 mt-1">${letter.company.name}</p>` : ''}
+</div>`;
+});
+} else {
+letterHistory.innerHTML = '<p class="text-center text-gray-400 py-8">Belum ada surat</p>';
+}
+} catch(error) {
+console.error('Error loading letters:', error);
+letterHistory.innerHTML = '<p class="text-center text-red-400 py-8">Gagal memuat data</p>';
+}
 }
 
-// ===== Init =====
+/* ============ INITIALIZE ON PAGE LOAD ============ */
+window.addEventListener('DOMContentLoaded', function() {
+loadCompanies();
+loadTodayAttendance();
 loadReportHistory();
 loadFeedbackHistory();
 loadLetterHistory();
-</script>
+});
 
+</script>
 </body>
 </html>
