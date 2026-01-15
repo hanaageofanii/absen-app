@@ -9,6 +9,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
+use App\Models\Attendance;
+use App\Models\Report;
 
 class AuthController extends Controller
 {
@@ -55,12 +57,31 @@ class AuthController extends Controller
             : redirect('/dashboard');
     }
 
-    public function adminDashboard(){
-        if(!session('login')||session('role')!='admin')
-            return redirect('/login');
-
-        return view('admin.dashboard');
+public function adminDashboard()
+{
+    if (!session('login') || session('role') != 'admin') {
+        return redirect('/login');
     }
+
+    // Ambil data attendance + user
+    $attendances = Attendance::with('user')
+        ->orderBy('date', 'desc')
+        ->get();
+
+    // Ambil data reports + user
+    $reports = Report::with('user')
+        ->orderBy('report_date', 'desc')
+        ->get();
+
+    // Ambil semua user
+    $users = User::orderBy('created_at', 'desc')->get();
+
+    return view('admin.dashboard', compact(
+        'attendances',
+        'reports',
+        'users'
+    ));
+}
 
     public function userDashboard(){
         if(!session('login')||session('role')!='user')
