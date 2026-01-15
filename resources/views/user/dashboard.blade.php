@@ -270,7 +270,7 @@ class="tab-active px-6 py-3 font-semibold text-base transition-all duration-300 
 </span>
 </button>
 
-<button onclick="tabMenu('feedback')"
+{{-- <button onclick="tabMenu('feedback')"
 id="tab-feedback"
 class="px-6 py-3 font-semibold text-base text-gray-600 hover:text-indigo-600 transition-all duration-300 whitespace-nowrap">
 <span class="flex items-center space-x-2">
@@ -279,9 +279,9 @@ class="px-6 py-3 font-semibold text-base text-gray-600 hover:text-indigo-600 tra
 </svg>
 <span>Feedback</span>
 </span>
-</button>
+</button> --}}
 
-<button onclick="tabMenu('surat')"
+{{-- <button onclick="tabMenu('surat')"
 id="tab-surat"
 class="px-6 py-3 font-semibold text-base text-gray-600 hover:text-indigo-600 transition-all duration-300 whitespace-nowrap">
 <span class="flex items-center space-x-2">
@@ -290,7 +290,7 @@ class="px-6 py-3 font-semibold text-base text-gray-600 hover:text-indigo-600 tra
 </svg>
 <span>Surat</span>
 </span>
-</button>
+</button> --}}
 
 </div>
 
@@ -587,110 +587,166 @@ toast('Gagal memuat data perusahaan', 'error');
 }
 
 /* ============ ATTENDANCE ============ */
+
 let clockInData = null;
 
-// Load today's attendance
+const EARLIEST_CLOCK_IN = 6; // 06:00
+const LATEST_ON_TIME   = 9; // 09:00
+const CLOCK_OUT_HOUR   = 17; // 17:00
+
+// ================= LOAD TODAY =================
 async function loadTodayAttendance(){
-try {
-let response = await fetch('/api/attendance/history');
-let data = await response.json();
+    try {
+        let response = await fetch('/api/attendance/history');
+        let data = await response.json();
 
-if(data.length > 0) {
-let today = data.find(att => att.date === new Date().toISOString().split('T')[0]);
-if(today) {
-if(today.clock_in) {
-clockInData = new Date(`${today.date} ${today.clock_in}`);
-clockInTime.innerHTML = today.clock_in;
-document.getElementById('btnClockIn').disabled = true;
-document.getElementById('btnClockIn').innerHTML = '<span class="relative z-10">✓ Sudah Absen Masuk</span>';
-}
-if(today.clock_out) {
-clockOutTime.innerHTML = today.clock_out;
-document.getElementById('btnClockOut').disabled = true;
-document.getElementById('btnClockOut').innerHTML = '<span class="relative z-10">✓ Sudah Absen Pulang</span>';
-if(today.work_hours) {
-workHours.innerHTML = today.work_hours.toFixed(1) + ' jam';
-}
-}
-}
-}
-} catch(error) {
-console.log('No attendance data for today');
-}
+        if(!Array.isArray(data)) return;
+
+        const todayDate = new Date().toISOString().split('T')[0];
+        const today = data.find(att => att.date === todayDate);
+
+        if(!today) return;
+
+        if(today.clock_in){
+            clockInData = new Date(`${today.date} ${today.clock_in}`);
+            clockInTime.innerHTML = today.clock_in;
+
+            btnClockIn.disabled = true;
+            btnClockIn.innerHTML =
+                '<span class="relative z-10">✓ Sudah Absen Masuk</span>';
+
+            // status telat
+            if(clockInData.getHours() > LATEST_ON_TIME){
+                toast('⏰ Anda TERLAMBAT', 'error');
+            }
+        }
+
+        if(today.clock_out){
+            clockOutTime.innerHTML = today.clock_out;
+            btnClockOut.disabled = true;
+            btnClockOut.innerHTML =
+                '<span class="relative z-10">✓ Sudah Absen Pulang</span>';
+
+            if(today.work_hours){
+                workHours.innerHTML = today.work_hours.toFixed(1) + ' jam';
+            }
+        }
+
+    } catch (error) {
+        console.log('No attendance data for today');
+    }
 }
 
+// ================= CLOCK IN =================
 async function clockIn(){
-const btn = document.getElementById('btnClockIn');
-btn.disabled = true;
-btn.innerHTML = '<span class="relative z-10"><div class="loading"></div></span>';
+    const now = new Date();
+    const hour = now.getHours();
 
-try {
-let response = await fetch('/api/attendance/clock-in', {
-method: 'POST',
-headers: {
-'X-CSRF-TOKEN': csrf,
-'Content-Type': 'application/json'
-}
-});
-let data = await response.json();
-if(data.success){
-clockInData = new Date();
-clockInTime.innerHTML = clockInData.toLocaleTimeString('id-ID');
-toast('✓ Absen masuk berhasil dicatat');
-btn.innerHTML = '<span class="relative z-10">✓ Sudah Absen Masuk</span>';
-} else {
-btn.disabled = false;
-btn.innerHTML = '<span class="relative z-10 flex items-center justify-center space-x-2"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg><span>Absen Masuk</span></span>';
-toast(data.message || 'Gagal absen masuk', 'error');
-}
-} catch(error) {
-console.error('Error clock in:', error);
-btn.disabled = false;
-btn.innerHTML = '<span class="relative z-10 flex items-center justify-center space-x-2"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg><span>Absen Masuk</span></span>';
-toast('❌ Gagal absen masuk', 'error');
-}
+    if(hour < EARLIEST_CLOCK_IN){
+        toast('⛔ Absen masuk dibuka mulai jam 06:00', 'error');
+        return;
+    }
+
+    const btn = btnClockIn;
+    btn.disabled = true;
+    btn.innerHTML = '<span class="relative z-10"><div class="loading"></div></span>';
+
+    try {
+        let response = await fetch('/api/attendance/clock-in', {
+            method: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': csrf,
+                'Content-Type': 'application/json'
+            }
+        });
+
+        let data = await response.json();
+
+        if(!data.success) throw new Error(data.message);
+
+        clockInData = now;
+        clockInTime.innerHTML = now.toLocaleTimeString('id-ID');
+
+        if(hour > LATEST_ON_TIME){
+            toast('⏰ Anda TERLAMBAT', 'error');
+        } else {
+            toast('✓ Absen masuk tepat waktu');
+        }
+
+        btn.innerHTML =
+            '<span class="relative z-10">✓ Sudah Absen Masuk</span>';
+
+    } catch (error) {
+        btn.disabled = false;
+        btn.innerHTML = `
+        <span class="relative z-10 flex items-center justify-center space-x-2">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+            <span>Absen Masuk</span>
+        </span>`;
+        toast(error.message || '❌ Gagal absen masuk', 'error');
+    }
 }
 
+// ================= CLOCK OUT =================
 async function clockOut(){
-if(!clockInData) {
-toast('⚠️ Anda belum absen masuk', 'error');
-return;
+    if(!clockInData){
+        toast('⚠️ Anda belum absen masuk', 'error');
+        return;
+    }
+
+    const now = new Date();
+    const hour = now.getHours();
+
+    if(hour < CLOCK_OUT_HOUR){
+        toast('⛔ Absen pulang hanya bisa setelah jam 17:00', 'error');
+        return;
+    }
+
+    const btn = btnClockOut;
+    btn.disabled = true;
+    btn.innerHTML = '<span class="relative z-10"><div class="loading"></div></span>';
+
+    try {
+        let response = await fetch('/api/attendance/clock-out', {
+            method: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': csrf,
+                'Content-Type': 'application/json'
+            }
+        });
+
+        let data = await response.json();
+        if(!data.success) throw new Error(data.message);
+
+        clockOutTime.innerHTML = now.toLocaleTimeString('id-ID');
+
+        const diff = (now - clockInData) / 3600000;
+        workHours.innerHTML = diff.toFixed(1) + ' jam';
+
+        toast('✓ Absen pulang berhasil dicatat');
+        btn.innerHTML =
+            '<span class="relative z-10">✓ Sudah Absen Pulang</span>';
+
+    } catch (error) {
+        btn.disabled = false;
+        btn.innerHTML = `
+        <span class="relative z-10 flex items-center justify-center space-x-2">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+            <span>Absen Pulang</span>
+        </span>`;
+        toast(error.message || '❌ Gagal absen pulang', 'error');
+    }
 }
 
-const btn = document.getElementById('btnClockOut');
-btn.disabled = true;
-btn.innerHTML = '<span class="relative z-10"><div class="loading"></div></span>';
-
-try {
-let response = await fetch('/api/attendance/clock-out', {
-method: 'POST',
-headers: {
-'X-CSRF-TOKEN': csrf,
-'Content-Type': 'application/json'
-}
+// ================= INIT =================
+document.addEventListener('DOMContentLoaded', () => {
 });
-let data = await response.json();
-if(data.success){
-let out = new Date();
-clockOutTime.innerHTML = out.toLocaleTimeString('id-ID');
-
-let diff = (out - clockInData) / 3600000;
-workHours.innerHTML = diff.toFixed(1) + ' jam';
-
-toast('✓ Absen pulang berhasil dicatat');
-btn.innerHTML = '<span class="relative z-10">✓ Sudah Absen Pulang</span>';
-} else {
-btn.disabled = false;
-btn.innerHTML = '<span class="relative z-10 flex items-center justify-center space-x-2"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg><span>Absen Pulang</span></span>';
-toast(data.message || 'Gagal absen pulang', 'error');
-}
-} catch(error) {
-console.error('Error clock out:', error);
-btn.disabled = false;
-btn.innerHTML = '<span class="relative z-10 flex items-center justify-center space-x-2"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg><span>Absen Pulang</span></span>';
-toast('❌ Gagal absen pulang', 'error');
-}
-}
 
 /* ============ REPORTS ============ */
 async function submitReport(e){
